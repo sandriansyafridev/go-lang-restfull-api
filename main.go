@@ -22,6 +22,7 @@ func main() {
 	r := httprouter.New()
 	r.GET("/api/categories", categoryController.FindAll)
 	r.GET("/api/categories/:id", categoryController.FindByID)
+	r.DELETE("/api/categories/:id", categoryController.Delete)
 
 	http.ListenAndServe(":3000", r)
 

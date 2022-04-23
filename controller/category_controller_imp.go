@@ -15,13 +15,36 @@ type categoryController struct {
 	CategoryService service.CategoryService
 }
 
+// Delete implements CategoryController
+func (categoryController *categoryController) Delete(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+
+	CategoryID, _ := strconv.Atoi(params.ByName("id"))
+
+	err := categoryController.CategoryService.Delete(r.Context(), CategoryID)
+	if err != nil {
+		responseError := response.BuildResponseError("Failed delete category", response.EmptyObject{})
+		w.Header().Add("content-type", "application/json")
+		encoder := json.NewEncoder(w)
+		encoder.Encode(responseError)
+		return
+	}
+
+	responseSuccess := response.BuildResponseSuccess("Delete category", map[string]interface{}{
+		"deleted": true,
+	})
+	w.Header().Add("content-type", "application/json")
+	encoder := json.NewEncoder(w)
+	encoder.Encode(responseSuccess)
+
+}
+
 // FindByID implements CategoryController
 func (categoryController *categoryController) FindByID(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	CategoryID, _ := strconv.Atoi(params.ByName("id"))
 	categoryResponse, err := categoryController.CategoryService.FindByID(r.Context(), CategoryID)
 
 	if err != nil || categoryResponse.ID == 0 {
-		responseError := response.BuildResponseError("Failed get category", nil)
+		responseError := response.BuildResponseError("Failed get category", response.EmptyObject{})
 		w.Header().Add("content-type", "application/json")
 		encoder := json.NewEncoder(w)
 		encoder.Encode(responseError)

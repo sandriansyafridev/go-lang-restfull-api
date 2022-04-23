@@ -5,10 +5,29 @@ import (
 	"golangapi/model/formatter"
 	"golangapi/model/response"
 	"golangapi/repository"
+	"log"
 )
 
 type categoryService struct {
 	CategoryRepository repository.CategoryRepository
+}
+
+// Delete implements CategoryService
+func (categoryService *categoryService) Delete(c context.Context, CategoryID int) error {
+
+	category, err := categoryService.CategoryRepository.FindByID(c, CategoryID)
+	log.Println(category)
+	if err != nil || category.ID == 0 {
+		return err
+	}
+
+	err = categoryService.CategoryRepository.Delete(c, category)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 // FindByID implements CategoryService

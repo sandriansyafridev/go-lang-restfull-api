@@ -6,6 +6,9 @@ type WebResponse struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type EmptyObject struct {
+}
+
 func BuildResponseSuccess(message string, data interface{}) WebResponse {
 	return WebResponse{
 		Status:  true,
