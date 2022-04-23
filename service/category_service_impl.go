@@ -2,21 +2,35 @@ package service
 
 import (
 	"context"
+	"golangapi/model/entity"
 	"golangapi/model/formatter"
+	"golangapi/model/request"
 	"golangapi/model/response"
 	"golangapi/repository"
-	"log"
 )
 
 type categoryService struct {
 	CategoryRepository repository.CategoryRepository
 }
 
+// Create implements CategoryService
+func (categoryService *categoryService) Create(c context.Context, categoryRequest request.CategoryCreateRequest) (response.CategoryResponse, error) {
+	categoryResponse := response.CategoryResponse{}
+	category := entity.Category{}
+	category.Name = categoryRequest.Name
+	categoryCreated, err := categoryService.CategoryRepository.Create(c, category)
+	if err != nil {
+		return categoryResponse, err
+	}
+
+	return formatter.ToCategoryResponse(categoryCreated), nil
+
+}
+
 // Delete implements CategoryService
 func (categoryService *categoryService) Delete(c context.Context, CategoryID int) error {
 
 	category, err := categoryService.CategoryRepository.FindByID(c, CategoryID)
-	log.Println(category)
 	if err != nil || category.ID == 0 {
 		return err
 	}

@@ -2,6 +2,7 @@ package formatter
 
 import (
 	"golangapi/model/entity"
+	"golangapi/model/request"
 	"golangapi/model/response"
 )
 
@@ -23,4 +24,9 @@ func ToCategoriesResponse(categories []entity.Category) (categoriesResponse []re
 
 	return categoriesResponse
 
+}
+
+func ToCategoryEntity(categoryRequest request.CategoryCreateRequest) (category entity.Category) {
+	category.Name = categoryRequest.Name
+	return category
 }

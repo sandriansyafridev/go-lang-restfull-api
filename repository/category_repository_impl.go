@@ -12,6 +12,28 @@ type categoryRepository struct {
 	DB *sql.DB
 }
 
+// Create implements CategoryRepository
+func (categoryRepository *categoryRepository) Create(c context.Context, category entity.Category) (entity.Category, error) {
+
+	querySQL := "INSERT INTO categories(name) VALUES(?)"
+	stmt, err := categoryRepository.DB.Prepare(querySQL)
+	if err != nil {
+		log.Fatal("Failed to prepare query SQL:", err.Error())
+	}
+
+	result, err := stmt.ExecContext(c, category.Name)
+	if err != nil {
+		log.Fatal("Failed to ExecContext:", err.Error())
+	}
+
+	id, _ := result.LastInsertId()
+	CategoryID := int(id)
+	category.ID = CategoryID
+
+	return category, nil
+
+}
+
 // Delete implements CategoryRepository
 func (categoryRepository *categoryRepository) Delete(c context.Context, category entity.Category) error {
 
