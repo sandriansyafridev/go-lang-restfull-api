@@ -3,6 +3,7 @@ package main
 import (
 	"golangapi/app"
 	"golangapi/controller"
+	"golangapi/middleware"
 	"golangapi/repository"
 	"golangapi/route"
 	"golangapi/service"
@@ -23,5 +24,5 @@ var (
 func main() {
 	defer db.Close()
 	r := route.Initialize(categoryController)
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":3000", middleware.NewAuthorizationMiddleware(r))
 }
