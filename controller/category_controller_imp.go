@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"encoding/json"
+	"golangapi/helper"
 	"golangapi/model/request"
 	"golangapi/model/response"
 	"golangapi/service"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -23,22 +22,17 @@ func (categoryController *categoryController) Update(w http.ResponseWriter, r *h
 	CategoryID, _ := strconv.Atoi(params.ByName("id"))
 
 	categoryRequest := request.CategoryUpdateRequest{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&categoryRequest)
+	err := helper.ReadRequestBody(r, &categoryRequest)
 	if err != nil {
 		responseError := response.BuildResponseError("fail read  request body", err.Error(), response.EmptyObject{})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
 	err = categoryController.Validate.Struct(categoryRequest)
 	if err != nil {
 		responseError := response.BuildResponseError("fail update  request body", err.Error(), response.EmptyObject{})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
@@ -47,81 +41,60 @@ func (categoryController *categoryController) Update(w http.ResponseWriter, r *h
 	categoryUpdated, err := categoryController.CategoryService.Update(r.Context(), categoryRequest)
 	if err != nil {
 		responseError := response.BuildResponseError("fail to update category", err.Error(), response.EmptyObject{})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
 	responseSuccess := response.BuildResponseSuccess("Category Updated", categoryUpdated)
-	w.Header().Add("content-type", "application/json")
-	encoder := json.NewEncoder(w)
-	encoder.Encode(responseSuccess)
-
+	helper.WriteRequestBody(w, responseSuccess)
 }
 
 // Create implements CategoryController
 func (categoryController *categoryController) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 
 	categoryRequest := request.CategoryCreateRequest{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&categoryRequest)
+	err := helper.ReadRequestBody(r, &categoryRequest)
 	if err != nil {
 		responseError := response.BuildResponseError("fail read  request body", err.Error(), response.EmptyObject{})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
 	err = categoryController.Validate.Struct(categoryRequest)
 	if err != nil {
 		responseError := response.BuildResponseError("fail read  request body", err.Error(), response.EmptyObject{})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
 	categoryResponse, err := categoryController.CategoryService.Create(r.Context(), categoryRequest)
 	if err != nil {
 		responseError := response.BuildResponseError("fail to create category", err.Error(), response.EmptyObject{})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
 	responseSuccess := response.BuildResponseSuccess("CategoryCreated", categoryResponse)
-	w.Header().Add("content-type", "application/json")
-	encoder := json.NewEncoder(w)
-	encoder.Encode(responseSuccess)
-
+	helper.WriteRequestBody(w, responseSuccess)
 }
 
 // Delete implements CategoryController
 func (categoryController *categoryController) Delete(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 
 	CategoryID, _ := strconv.Atoi(params.ByName("id"))
-
+	data := map[string]interface{}{
+		"deleted": false,
+	}
 	err := categoryController.CategoryService.Delete(r.Context(), CategoryID)
 	if err != nil {
-		responseError := response.BuildResponseError("Failed delete category", err.Error(), map[string]interface{}{
-			"deleted": false,
-		})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		responseError := response.BuildResponseError("Failed delete category", err.Error(), data)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
-	responseSuccess := response.BuildResponseSuccess("Delete category", map[string]interface{}{
-		"deleted": true,
-	})
-	w.Header().Add("content-type", "application/json")
-	encoder := json.NewEncoder(w)
-	encoder.Encode(responseSuccess)
-
+	data["deleted"] = true
+	responseSuccess := response.BuildResponseSuccess("Delete category", data)
+	helper.WriteRequestBody(w, responseSuccess)
 }
 
 // FindByID implements CategoryController
@@ -131,29 +104,20 @@ func (categoryController *categoryController) FindByID(w http.ResponseWriter, r 
 
 	if err != nil || categoryResponse.ID == 0 {
 		responseError := response.BuildResponseError("Failed get category", err.Error(), response.EmptyObject{})
-		w.Header().Add("content-type", "application/json")
-		encoder := json.NewEncoder(w)
-		encoder.Encode(responseError)
+		helper.WriteRequestBody(w, responseError)
 		return
 	}
 
 	responseSuccess := response.BuildResponseSuccess("Get category", categoryResponse)
-	w.Header().Add("content-type", "application/json")
-	encoder := json.NewEncoder(w)
-	encoder.Encode(responseSuccess)
+	helper.WriteRequestBody(w, responseSuccess)
 }
 
 // FindAll implements CategoryController
 func (categoryController *categoryController) FindAll(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	categoriesResponse, err := categoryController.CategoryService.FindAll(r.Context())
-	if err != nil {
-		log.Fatal("NOT FOUND CATEGORIES")
-	}
-	responseSuccess := response.BuildResponseSuccess("Get all categories", categoriesResponse)
-	w.Header().Add("content-type", "application/json")
-	encoder := json.NewEncoder(w)
-	encoder.Encode(responseSuccess)
+	categoriesResponse, _ := categoryController.CategoryService.FindAll(r.Context())
 
+	responseSuccess := response.BuildResponseSuccess("Get all categories", categoriesResponse)
+	helper.WriteRequestBody(w, responseSuccess)
 }
 
 func NewCategoryController(categoryService service.CategoryService, validate *validator.Validate) CategoryController {

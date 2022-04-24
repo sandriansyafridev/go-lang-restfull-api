@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"golangapi/helper"
 	"golangapi/model/entity"
-	"log"
 )
 
 type categoryRepository struct {
@@ -17,14 +17,10 @@ func (categoryRepository *categoryRepository) Update(c context.Context, category
 
 	querySQL := "UPDATE categories SET name = ? WHERE id = ?"
 	stmt, err := categoryRepository.DB.Prepare(querySQL)
-	if err != nil {
-		log.Fatal("Failed to prepare query SQL:", err.Error())
-	}
+	helper.FatalIfError("Failed to prepare query SQL", err)
 
 	_, err = stmt.ExecContext(c, category.Name, category.ID)
-	if err != nil {
-		log.Fatal("Failed to ExecContext:", err.Error())
-	}
+	helper.FatalIfError("Failed to ExecContext", err)
 
 	return category, nil
 
@@ -35,14 +31,10 @@ func (categoryRepository *categoryRepository) Create(c context.Context, category
 
 	querySQL := "INSERT INTO categories(name) VALUES(?)"
 	stmt, err := categoryRepository.DB.Prepare(querySQL)
-	if err != nil {
-		log.Fatal("Failed to prepare query SQL:", err.Error())
-	}
+	helper.FatalIfError("Failed to prepare query SQL", err)
 
 	result, err := stmt.ExecContext(c, category.Name)
-	if err != nil {
-		log.Fatal("Failed to ExecContext:", err.Error())
-	}
+	helper.FatalIfError("Failed to ExecContext", err)
 
 	id, _ := result.LastInsertId()
 	CategoryID := int(id)
@@ -57,14 +49,10 @@ func (categoryRepository *categoryRepository) Delete(c context.Context, category
 
 	querySQL := "DELETE FROM categories WHERE id = ?"
 	stmt, err := categoryRepository.DB.Prepare(querySQL)
-	if err != nil {
-		log.Fatal("Failed to prepare query SQL:", err.Error())
-	}
+	helper.FatalIfError("Failed to prepare query SQL", err)
 
 	_, err = stmt.ExecContext(c, category.ID)
-	if err != nil {
-		log.Fatal("Failed to ExecContext:", err.Error())
-	}
+	helper.FatalIfError("Failed to ExecContext", err)
 
 	return nil
 
@@ -74,23 +62,17 @@ func (categoryRepository *categoryRepository) Delete(c context.Context, category
 func (categoryRepository *categoryRepository) FindByID(c context.Context, CategoryID int) (entity.Category, error) {
 	querySQL := "SELECT * FROM categories WHERE id = ?"
 	stmt, err := categoryRepository.DB.Prepare(querySQL)
-	if err != nil {
-		log.Fatal("Failed to prepare query SQL:", err.Error())
-	}
+	helper.FatalIfError("Failed to prepare query SQL", err)
 
 	rows, err := stmt.QueryContext(c, CategoryID)
-	if err != nil {
-		log.Fatal("Failed to prepare query SQL:", err.Error())
-	}
+	helper.FatalIfError("Failed to QueryContext", err)
 	defer stmt.Close()
 
 	defer rows.Close()
 	category := entity.Category{}
 	if rows.Next() {
 		err := rows.Scan(&category.ID, &category.Name)
-		if err != nil {
-			log.Fatal("Failed scan categories:", err.Error())
-		}
+		helper.FatalIfError("Failed scan categories", err)
 	}
 
 	if category.ID == 0 {
@@ -105,25 +87,18 @@ func (categoryRepository *categoryRepository) FindByID(c context.Context, Catego
 func (categoryRepository *categoryRepository) FindAll(c context.Context) ([]entity.Category, error) {
 	querySQL := "SELECT * FROM categories"
 	stmt, err := categoryRepository.DB.Prepare(querySQL)
-	if err != nil {
-		log.Fatal("Failed to prepare query SQL:", err.Error())
-	}
+	helper.FatalIfError("Failed to prepare query SQL", err)
 
 	rows, err := stmt.QueryContext(c)
-	if err != nil {
-		log.Fatal("Failed to execute query context:", err.Error())
-	}
-
+	helper.FatalIfError("Failed to execute query context", err)
 	defer stmt.Close()
-	defer rows.Close()
 
+	defer rows.Close()
 	categories := []entity.Category{}
 	for rows.Next() {
 		category := entity.Category{}
 		err := rows.Scan(&category.ID, &category.Name)
-		if err != nil {
-			log.Fatal("Failed scan categories:", err.Error())
-		}
+		helper.FatalIfError("Failed scan categories", err)
 		categories = append(categories, category)
 	}
 
