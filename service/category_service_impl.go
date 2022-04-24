@@ -13,6 +13,26 @@ type categoryService struct {
 	CategoryRepository repository.CategoryRepository
 }
 
+// Update implements CategoryService
+func (categoryService *categoryService) Update(c context.Context, categoryRequest request.CategoryUpdateRequest) (response.CategoryResponse, error) {
+
+	categoryResponse := response.CategoryResponse{}
+	category, err := categoryService.CategoryRepository.FindByID(c, categoryRequest.ID)
+	if err != nil {
+		return categoryResponse, err
+	}
+
+	category.Name = categoryRequest.Name
+
+	categoryUpdated, err := categoryService.CategoryRepository.Update(c, category)
+	if err != nil {
+		return categoryResponse, err
+	}
+
+	return formatter.ToCategoryResponse(categoryUpdated), nil
+
+}
+
 // Create implements CategoryService
 func (categoryService *categoryService) Create(c context.Context, categoryRequest request.CategoryCreateRequest) (response.CategoryResponse, error) {
 	categoryResponse := response.CategoryResponse{}

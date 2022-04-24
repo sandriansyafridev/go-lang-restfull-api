@@ -11,4 +11,5 @@ type CategoryService interface {
 	FindByID(c context.Context, CategoryID int) (response.CategoryResponse, error)
 	Delete(c context.Context, CategoryID int) error
 	Create(c context.Context, categoryRequest request.CategoryCreateRequest) (response.CategoryResponse, error)
+	Update(c context.Context, categoryRequest request.CategoryUpdateRequest) (response.CategoryResponse, error)
 }

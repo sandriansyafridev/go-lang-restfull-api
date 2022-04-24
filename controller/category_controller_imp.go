@@ -18,6 +18,48 @@ type categoryController struct {
 	Validate        *validator.Validate
 }
 
+// Update implements CategoryController
+func (categoryController *categoryController) Update(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	CategoryID, _ := strconv.Atoi(params.ByName("id"))
+
+	categoryRequest := request.CategoryUpdateRequest{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&categoryRequest)
+	if err != nil {
+		responseError := response.BuildResponseError("fail read  request body", err.Error(), response.EmptyObject{})
+		w.Header().Add("content-type", "application/json")
+		encoder := json.NewEncoder(w)
+		encoder.Encode(responseError)
+		return
+	}
+
+	err = categoryController.Validate.Struct(categoryRequest)
+	if err != nil {
+		responseError := response.BuildResponseError("fail update  request body", err.Error(), response.EmptyObject{})
+		w.Header().Add("content-type", "application/json")
+		encoder := json.NewEncoder(w)
+		encoder.Encode(responseError)
+		return
+	}
+
+	categoryRequest.ID = CategoryID
+
+	categoryUpdated, err := categoryController.CategoryService.Update(r.Context(), categoryRequest)
+	if err != nil {
+		responseError := response.BuildResponseError("fail to update category", err.Error(), response.EmptyObject{})
+		w.Header().Add("content-type", "application/json")
+		encoder := json.NewEncoder(w)
+		encoder.Encode(responseError)
+		return
+	}
+
+	responseSuccess := response.BuildResponseSuccess("Category Updated", categoryUpdated)
+	w.Header().Add("content-type", "application/json")
+	encoder := json.NewEncoder(w)
+	encoder.Encode(responseSuccess)
+
+}
+
 // Create implements CategoryController
 func (categoryController *categoryController) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 

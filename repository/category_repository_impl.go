@@ -12,6 +12,24 @@ type categoryRepository struct {
 	DB *sql.DB
 }
 
+// Update implements CategoryRepository
+func (categoryRepository *categoryRepository) Update(c context.Context, category entity.Category) (entity.Category, error) {
+
+	querySQL := "UPDATE categories SET name = ? WHERE id = ?"
+	stmt, err := categoryRepository.DB.Prepare(querySQL)
+	if err != nil {
+		log.Fatal("Failed to prepare query SQL:", err.Error())
+	}
+
+	_, err = stmt.ExecContext(c, category.Name, category.ID)
+	if err != nil {
+		log.Fatal("Failed to ExecContext:", err.Error())
+	}
+
+	return category, nil
+
+}
+
 // Create implements CategoryRepository
 func (categoryRepository *categoryRepository) Create(c context.Context, category entity.Category) (entity.Category, error) {
 

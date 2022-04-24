@@ -25,6 +25,7 @@ func main() {
 	r.GET("/api/categories", categoryController.FindAll)
 	r.POST("/api/categories", categoryController.Create)
 	r.GET("/api/categories/:id", categoryController.FindByID)
+	r.PUT("/api/categories/:id", categoryController.Update)
 	r.DELETE("/api/categories/:id", categoryController.Delete)
 
 	http.ListenAndServe(":3000", r)
